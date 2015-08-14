@@ -4,7 +4,6 @@ Javascript snippet for merchants to include on their checkout web page
 ##Usage
 
 1. Add the following JavaScript snippet to your checkout web page.
-
 ```
 <script type="text/javascript">
 
