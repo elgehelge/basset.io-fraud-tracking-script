@@ -3,13 +3,13 @@ Javascript snippet for merchants to include on their checkout web page
 
 ##Usage
 
-Add the following JavaScript snippet to your checkout web page.
+1. Add the following JavaScript snippet to your checkout web page.
 
 ```
 <script type="text/javascript">
 
   var _basset = {
-  	_basset._apiKey: 'MER-XXXXXXXX'
+  	_basset._apiKey: '<YOUR_API_KEY>';
   };
 
   (function() {
@@ -23,3 +23,5 @@ Add the following JavaScript snippet to your checkout web page.
 
 </script>
 ```
+
+2. Replace `<YOUR_API_KEY>` with your own API key.
