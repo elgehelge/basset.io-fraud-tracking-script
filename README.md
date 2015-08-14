@@ -23,5 +23,4 @@ Javascript snippet for merchants to include on their checkout web page
 
 </script>
 ```
-
 2. Replace `<YOUR_API_KEY>` with your own API key.
