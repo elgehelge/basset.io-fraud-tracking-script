@@ -7,9 +7,7 @@ Javascript snippet for merchants to include on their checkout web page
 
         <script type="text/javascript">
         
-          var _basset = {
-          	_basset._apiKey: '<YOUR_API_KEY>';
-          };
+          var _basset = {apiKey: '<YOUR_API_KEY>'};
         
           (function() {
             var t = document.createElement('script');
