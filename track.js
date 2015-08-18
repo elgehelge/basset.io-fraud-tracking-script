@@ -1,7 +1,10 @@
-
 (function() { // encapsulate using anonymous function
+
+
+
     // Helper functions
     // ----------------
+
     var protocol = document.location.protocol == 'https:' ? 'https' : 'http';
 
     // Generate a unique ID to refer to this specefic page load
@@ -12,18 +15,18 @@
             v = char === 'x' ? r : r & 0x3 | 0x8;
             return v.toString(16);
         });
-    };
+    }
     _basset.uuid = uuidGenerator();
 
     // Send data to server
     function sendData() {
-        console.log("Sending data:");
-        console.log(JSON.stringify(_basset));
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.open("POST", protocol + "://api.basset.io/track", true);
+        xmlHttp.timeout = 1000;
+        // xmlHttp.ontimeout = function () { alert("Timed out!!!"); }
         xmlHttp.send(JSON.stringify(_basset));
         _basset = {uuid: _basset.uuid, apiKey: _basset.apiKey}; // reset object to avoid sending data twice
-    };
+    }
 
     // Form listeners
     function addFormListeners() {
@@ -33,12 +36,25 @@
         var formElems = [].concat(Array.prototype.slice.call(inputs),
                                   Array.prototype.slice.call(textareas),
                                   Array.prototype.slice.call(selects));
+        formElems = formElems.filter(function(input) {return input.type != 'password'}); // better not touch the passwords
         for (var i = 0; i < formElems.length; ++i) {
-            addEvent(formElems[i], "change", function(formElem) { // TODO: use input for detecting typing speed
-                return trackFormElem(formElem);
+            addEvent(formElems[i], "change", function(formElem) {
+                return  function() {
+                    _basset.form = {
+                        field: {
+                            name: formElem.name,
+                            id: formElem.id,
+                            placeholder: formElem.placeholder,
+                            autocomplete: formElem.autocomplete,
+                            type: formElem.type
+                        },
+                        value: formElem.value
+                    };
+                    sendData();
+                }
             }(formElems[i]));
-        };
-    };
+        }
+    }
 
 
 
@@ -47,7 +63,6 @@
 
     // track context
     function trackContext() {
-        console.log("running trackContext!");
         _basset.context = {};
         _basset.context.url = window.location.href;
         _basset.context.referrer = document.referrer;
@@ -56,33 +71,19 @@
 
     // track IP
     function trackIp(){
-        console.log("running trackIp!");
         var xmlHttp = new XMLHttpRequest();
         xmlHttp.onreadystatechange = function() {
-            if (xmlHttp.readyState == 4) {
+            if (xmlHttp.readyState == 4 && xmlHttp.status==200) {
                 _basset.ip = JSON.parse(xmlHttp.responseText);
                 sendData();
             }
-        }
+        };
         xmlHttp.open("GET", protocol + "://api.ipify.org?format=json", true);
         xmlHttp.send(JSON.stringify(_basset));
     };
 
-    // track form
-    function trackFormElem(formElem) {
-        _basset.form = {
-            name: formElem.name,
-            id: formElem.id,
-            placeholder: formElem.placeholder,
-            autocomplete: formElem.autocomplete,
-            type: formElem.type
-        };
-        sendData();
-    };
-
     // track content
     function trackContent() {
-        console.log("running trackContent!");
         _basset.page = {};
         _basset.page.title = document.title;
         // This works well, but way too many prices exists on most checkout pages
@@ -94,7 +95,6 @@
 
     // track fingerprint
     function trackFingerprint() {
-        console.log("running trackFingerprint!");
         Fingerprint2.prototype.getAll = function(){
             var all = {};
             all.userAgent = this.userAgentKey([]);
@@ -136,23 +136,19 @@
     trackIp();
 
     // Start fingerprint tracking when fingerprintjs2 is loaded
-    console.log("init fingerprint load");
     var t = document.createElement('script');
     t.type = 'text/javascript';
     t.async = true;
     t.src = protocol + '://cdn.jsdelivr.net/fingerprintjs2/0.7.1/fingerprint2.min.js';
     t.onload = function () {
-        console.log("fingerprintjs2 loaded!");
         trackFingerprint();
     };
     var s = document.getElementsByTagName('script')[0];
     s.parentNode.insertBefore(t, s);
 
     // Start content tracking and add listeners when page has loaded
-    console.log("init page load");
     var oldOnLoad = window.onload;
     window.onload = function () {
-        console.log("page loaded!");
         if (typeof window.onload != 'function') {
             oldOnLoad();
         }
@@ -162,8 +158,8 @@
 
 
 
-    // Correct event listener queueing
-    // -------------------------------
+    // Correct event listener queuing
+    // ------------------------------
 
     // written by Dean Edwards, 2005
     // with input from Tino Zijdel, Matthias Miller, Diego Perini
